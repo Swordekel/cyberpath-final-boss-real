@@ -41,6 +41,47 @@ export function EditProfilePage({ isLoggedIn, onNavigate, userProfile, onUpdateP
 
   const avatars = ['👨‍💻', '👩‍💻', '🧑‍💼', '👨‍🔬', '👩‍🔬', '🧑‍🎓', '👨‍🎓', '👩‍🎓', '🥷', '👾', '🤖', '👽'];
 
+  // ✅ Helper function to compress image
+  const compressImage = async (file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to compressed base64
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          console.log(`✅ Image compressed: Original ~${(file.size / 1024).toFixed(0)}KB -> Compressed ~${(compressedDataUrl.length * 0.75 / 1024).toFixed(0)}KB`);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -73,7 +114,7 @@ export function EditProfilePage({ isLoggedIn, onNavigate, userProfile, onUpdateP
     });
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Check file size (max 5MB)
@@ -88,17 +129,20 @@ export function EditProfilePage({ isLoggedIn, onNavigate, userProfile, onUpdateP
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setPhotoUrl(result);
-        setPhotoPreview(result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // ✅ Compress image before storing (max 800px width, 70% quality)
+        const compressedImage = await compressImage(file, 800, 0.7);
+        setPhotoUrl(compressedImage);
+        setPhotoPreview(compressedImage);
+        console.log('✅ Profile photo compressed and ready');
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        alert('Failed to process image. Please try another file.');
+      }
     }
   };
 
-  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Check file size (max 5MB)
@@ -113,15 +157,16 @@ export function EditProfilePage({ isLoggedIn, onNavigate, userProfile, onUpdateP
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImageToCrop(result);
+      try {
+        // ✅ Compress image before cropping (max 1200px width, 75% quality for cover)
+        const compressedImage = await compressImage(file, 1200, 0.75);
+        setImageToCrop(compressedImage);
         setShowCropModal(true);
-        setZoom(1);
-        setCrop({ x: 0, y: 0 });
-      };
-      reader.readAsDataURL(file);
+        console.log('✅ Cover photo compressed and ready for cropping');
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        alert('Failed to process image. Please try another file.');
+      }
     }
   };
 

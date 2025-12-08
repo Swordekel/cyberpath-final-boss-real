@@ -98,6 +98,17 @@ export function syncUserFromAPI(userData: StoredUser): void {
   const allUsers = loadAllUsers();
   const userIndex = allUsers.findIndex(u => u.email === userData.email);
   
+  // ✅ Log untuk debugging foto profile sync
+  console.log('📥 Syncing user from API to localStorage:', {
+    email: userData.email,
+    name: userData.name,
+    hasPhotoUrl: !!userData.photoUrl,
+    photoUrlLength: userData.photoUrl?.length || 0,
+    photoUrlPreview: userData.photoUrl?.substring(0, 50) || '',
+    hasCoverPhotoUrl: !!userData.coverPhotoUrl,
+    coverPhotoUrlLength: userData.coverPhotoUrl?.length || 0,
+  });
+  
   if (userIndex !== -1) {
     // Update existing user with API data
     allUsers[userIndex] = userData;
@@ -107,6 +118,15 @@ export function syncUserFromAPI(userData: StoredUser): void {
   }
   
   saveAllUsers(allUsers);
+  
+  // ✅ Verify data was saved correctly
+  const savedUser = getUserFromStorage(userData.email);
+  console.log('✅ Verified saved data:', {
+    email: savedUser?.email,
+    hasPhotoUrl: !!savedUser?.photoUrl,
+    photoUrlLength: savedUser?.photoUrl?.length || 0,
+    matchesOriginal: savedUser?.photoUrl === userData.photoUrl,
+  });
 }
 
 /**

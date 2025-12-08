@@ -149,6 +149,15 @@ function App() {
       setUserName(updatedProfile.name);
     }
     
+    // ✅ Log untuk debugging foto profile
+    console.log('🔄 Updating profile with data:', {
+      email: userProfile.email,
+      hasPhotoUrl: !!updatedProfile.photoUrl,
+      photoUrlLength: updatedProfile.photoUrl?.length || 0,
+      hasCoverPhotoUrl: !!updatedProfile.coverPhotoUrl,
+      coverPhotoUrlLength: updatedProfile.coverPhotoUrl?.length || 0,
+    });
+    
     // ✅ Try to update via API first
     const updateProfileAsync = async () => {
       try {
@@ -158,12 +167,29 @@ function App() {
           completedQuizzes,
         });
         
+        console.log('✅ API update successful, received user data:', {
+          email: updatedUser.email,
+          hasPhotoUrl: !!updatedUser.photoUrl,
+          photoUrlLength: updatedUser.photoUrl?.length || 0,
+          hasCoverPhotoUrl: !!updatedUser.coverPhotoUrl,
+          coverPhotoUrlLength: updatedUser.coverPhotoUrl?.length || 0,
+        });
+        
         // ✅ IMPORTANT: Sync API response to localStorage
         const storedUser = getUserFromStorage(userProfile.email);
         if (storedUser) {
-          syncUserFromAPI({
+          const syncedData = {
             ...updatedUser,
             password: storedUser.password, // Keep existing password
+          };
+          syncUserFromAPI(syncedData);
+          
+          console.log('✅ Profile synced to localStorage:', {
+            email: syncedData.email,
+            hasPhotoUrl: !!syncedData.photoUrl,
+            photoUrlLength: syncedData.photoUrl?.length || 0,
+            hasCoverPhotoUrl: !!syncedData.coverPhotoUrl,
+            coverPhotoUrlLength: syncedData.coverPhotoUrl?.length || 0,
           });
         }
         
@@ -177,7 +203,7 @@ function App() {
             ...newProfile,
             completedQuizzes,
           });
-          console.log('✅ Profile update saved to localStorage');
+          console.log('✅ Profile update saved to localStorage (fallback mode)');
         }
       }
     };

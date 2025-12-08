@@ -2,6 +2,7 @@ import { User, Mail, MapPin, Globe, Calendar, Trophy, Target, Flame, Edit, Lock,
 import { Page, UserProfile, CompletedQuiz } from '../App';
 import { motion } from 'motion/react';
 import { getQuizTitle } from '../utils/quizData';
+import { useEffect } from 'react';  // ✅ TAMBAHKAN INI
 
 interface ProfilePageProps {
   isLoggedIn: boolean;
@@ -11,6 +12,19 @@ interface ProfilePageProps {
 }
 
 export function ProfilePage({ isLoggedIn, onNavigate, userProfile, completedQuizzes }: ProfilePageProps) {
+  // ✅ TAMBAHKAN KODE INI (setelah function declaration, sebelum if statement)
+  useEffect(() => {
+    console.log('👤 ProfilePage loaded with user data:', {
+      email: userProfile.email,
+      name: userProfile.name,
+      hasPhotoUrl: !!userProfile.photoUrl,
+      photoUrlLength: userProfile.photoUrl?.length || 0,
+      photoUrlPreview: userProfile.photoUrl?.substring(0, 50) || 'NO PHOTO',
+      hasCoverPhotoUrl: !!userProfile.coverPhotoUrl,
+      coverPhotoUrlLength: userProfile.coverPhotoUrl?.length || 0,
+    });
+  }, [userProfile.photoUrl, userProfile.coverPhotoUrl, userProfile.email]);
+  // ✅ AKHIR KODE YANG DITAMBAHKAN
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">

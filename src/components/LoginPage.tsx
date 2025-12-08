@@ -39,6 +39,17 @@ export function LoginPage({ onLogin, onNavigate }: LoginPageProps) {
       // ✅ Try Supabase API first
       const userData = await loginUserAPI({ email, password });
       
+      console.log('✅ Login API response received:', {
+        email: userData.email,
+        name: userData.name,
+        hasPhotoUrl: !!userData.photoUrl,
+        photoUrlLength: userData.photoUrl?.length || 0,
+        hasCoverPhotoUrl: !!userData.coverPhotoUrl,
+        coverPhotoUrlLength: userData.coverPhotoUrl?.length || 0,
+        totalPoints: userData.totalPoints,
+        quizzesCompleted: userData.quizzesCompleted,
+      });
+      
       // ✅ IMPORTANT: Sync API data to localStorage so it's available on this device
       syncUserFromAPI({
         ...userData,
