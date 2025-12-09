@@ -1095,6 +1095,604 @@ const moduleLessons: Record<number, Lesson[]> = {
       points: 40,
     },
   ],
+  9: [
+    {
+      id: 1,
+      title: 'Database Security Fundamentals',
+      duration: '25 menit',
+      content: `
+        <h2>Pentingnya Database Security</h2>
+        <p>Database menyimpan aset paling berharga organisasi: data. Keamanan database adalah prioritas utama untuk melindungi dari akses tidak sah, pencurian data, dan serangan.</p>
+        
+        <h3>Ancaman Terhadap Database</h3>
+        <ul>
+          <li><strong>SQL Injection:</strong> Manipulasi query untuk akses tidak sah</li>
+          <li><strong>Privilege Escalation:</strong> User mendapat akses lebih tinggi</li>
+          <li><strong>Data Breach:</strong> Pencurian data dalam jumlah besar</li>
+          <li><strong>Insider Threats:</strong> Abuse dari pengguna internal</li>
+          <li><strong>Weak Authentication:</strong> Password lemah atau default credentials</li>
+          <li><strong>Unencrypted Data:</strong> Data tersimpan tanpa enkripsi</li>
+          <li><strong>Backup Vulnerabilities:</strong> Backup tidak aman</li>
+        </ul>
+
+        <h3>Database Security Layers</h3>
+        <ul>
+          <li><strong>Network Security:</strong> Firewall, VPN, network segmentation</li>
+          <li><strong>Access Control:</strong> Authentication & authorization</li>
+          <li><strong>Application Security:</strong> Input validation, prepared statements</li>
+          <li><strong>Database Security:</strong> Encryption, auditing, monitoring</li>
+          <li><strong>Physical Security:</strong> Server room access control</li>
+        </ul>
+
+        <h3>Database Security Best Practices</h3>
+        <ul>
+          <li>Principle of least privilege</li>
+          <li>Strong authentication (MFA)</li>
+          <li>Encryption at rest dan in transit</li>
+          <li>Regular security audits</li>
+          <li>Database activity monitoring</li>
+          <li>Secure backup & recovery</li>
+          <li>Patch management</li>
+        </ul>
+
+        <h3>Common Database Types</h3>
+        <ul>
+          <li><strong>Relational (SQL):</strong> MySQL, PostgreSQL, Oracle, SQL Server</li>
+          <li><strong>NoSQL:</strong> MongoDB, Cassandra, Redis, CouchDB</li>
+          <li><strong>Cloud Databases:</strong> AWS RDS, Azure SQL, Google Cloud SQL</li>
+        </ul>
+      `,
+      points: 20,
+    },
+    {
+      id: 2,
+      title: 'SQL Injection Deep Dive',
+      duration: '35 menit',
+      content: `
+        <h2>SQL Injection - Ancaman #1 Database</h2>
+        <p>SQL Injection (SQLi) adalah teknik injeksi kode yang mengeksploitasi vulnerability dalam aplikasi database-driven.</p>
+        
+        <h3>Bagaimana SQL Injection Bekerja?</h3>
+        <p>Contoh vulnerable code:</p>
+        <ul>
+          <li><code>query = "SELECT * FROM users WHERE username='" + userInput + "'"</code></li>
+          <li>Input: <code>admin' OR '1'='1</code></li>
+          <li>Query jadi: <code>SELECT * FROM users WHERE username='admin' OR '1'='1'</code></li>
+          <li>Result: Bypass authentication!</li>
+        </ul>
+
+        <h3>Jenis-jenis SQL Injection</h3>
+        <ul>
+          <li><strong>In-band SQLi:</strong>
+            <ul>
+              <li>Error-based: Menggunakan error messages</li>
+              <li>Union-based: Menggunakan UNION operator</li>
+            </ul>
+          </li>
+          <li><strong>Blind SQLi:</strong>
+            <ul>
+              <li>Boolean-based: True/false responses</li>
+              <li>Time-based: Delay menggunakan SLEEP()</li>
+            </ul>
+          </li>
+          <li><strong>Out-of-band SQLi:</strong> Menggunakan DNS/HTTP requests</li>
+        </ul>
+
+        <h3>SQL Injection Attack Examples</h3>
+        <ul>
+          <li><strong>Authentication Bypass:</strong> <code>' OR '1'='1' --</code></li>
+          <li><strong>Data Extraction:</strong> <code>' UNION SELECT username,password FROM users --</code></li>
+          <li><strong>Data Modification:</strong> <code>'; UPDATE users SET password='hacked' WHERE username='admin' --</code></li>
+          <li><strong>Database Deletion:</strong> <code>'; DROP TABLE users; --</code></li>
+        </ul>
+
+        <h3>Prevention Techniques</h3>
+        <ul>
+          <li><strong>Prepared Statements (Parameterized Queries):</strong> BEST PRACTICE
+            <ul>
+              <li>PHP: <code>$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");</code></li>
+              <li>Java: <code>PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");</code></li>
+              <li>Python: <code>cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))</code></li>
+            </ul>
+          </li>
+          <li><strong>Stored Procedures:</strong> Pre-compiled SQL</li>
+          <li><strong>Input Validation:</strong> Whitelist acceptable inputs</li>
+          <li><strong>Escaping User Input:</strong> Last resort (not recommended)</li>
+          <li><strong>Least Privilege:</strong> Database user dengan minimal permissions</li>
+          <li><strong>WAF (Web Application Firewall):</strong> Detect & block SQLi</li>
+          <li><strong>ORM Frameworks:</strong> Sequelize, Hibernate, Django ORM</li>
+        </ul>
+
+        <h3>Detection & Testing</h3>
+        <ul>
+          <li>Manual testing dengan payload: <code>' OR 1=1 --</code></li>
+          <li>Automated scanners: SQLMap, Burp Suite, OWASP ZAP</li>
+          <li>Code review untuk vulnerable patterns</li>
+          <li>Database monitoring untuk suspicious queries</li>
+        </ul>
+      `,
+      points: 30,
+    },
+    {
+      id: 3,
+      title: 'Database Encryption & Access Control',
+      duration: '30 menit',
+      content: `
+        <h2>Database Encryption</h2>
+        <p>Enkripsi adalah pertahanan terakhir jika attacker berhasil mencuri data.</p>
+        
+        <h3>Encryption at Rest</h3>
+        <ul>
+          <li><strong>Transparent Data Encryption (TDE):</strong> Encrypt entire database
+            <ul>
+              <li>SQL Server TDE</li>
+              <li>Oracle Advanced Security</li>
+              <li>MySQL Enterprise Encryption</li>
+            </ul>
+          </li>
+          <li><strong>Column-Level Encryption:</strong> Encrypt specific sensitive columns
+            <ul>
+              <li>Credit card numbers</li>
+              <li>Social security numbers</li>
+              <li>Passwords (use bcrypt/argon2)</li>
+            </ul>
+          </li>
+          <li><strong>File-Level Encryption:</strong> Encrypt database files di OS level</li>
+        </ul>
+
+        <h3>Encryption in Transit</h3>
+        <ul>
+          <li><strong>SSL/TLS:</strong> Encrypt connections antara app dan database</li>
+          <li>MySQL: Require SSL connections</li>
+          <li>PostgreSQL: Force SSL mode</li>
+          <li>MongoDB: TLS/SSL configuration</li>
+          <li>Certificate validation</li>
+        </ul>
+
+        <h3>Key Management</h3>
+        <ul>
+          <li><strong>Never hardcode encryption keys dalam code!</strong></li>
+          <li>Use Key Management Systems (KMS):
+            <ul>
+              <li>AWS KMS</li>
+              <li>Azure Key Vault</li>
+              <li>HashiCorp Vault</li>
+            </ul>
+          </li>
+          <li>Key rotation policies</li>
+          <li>Separate keys untuk different environments</li>
+        </ul>
+
+        <h2>Access Control</h2>
+        
+        <h3>Authentication</h3>
+        <ul>
+          <li><strong>Strong Passwords:</strong> Complexity requirements</li>
+          <li><strong>Multi-Factor Authentication:</strong> Extra layer</li>
+          <li><strong>Certificate-Based Authentication:</strong> Untuk services</li>
+          <li><strong>Disable Default Accounts:</strong> sa, root, admin</li>
+          <li><strong>Account Lockout Policies:</strong> After failed attempts</li>
+        </ul>
+
+        <h3>Authorization - Principle of Least Privilege</h3>
+        <ul>
+          <li><strong>Role-Based Access Control (RBAC):</strong>
+            <ul>
+              <li>Admin role: Full access</li>
+              <li>Developer role: Read/Write specific tables</li>
+              <li>App role: Minimal permissions</li>
+              <li>Read-only role: SELECT only</li>
+            </ul>
+          </li>
+          <li><strong>Grant Minimal Permissions:</strong>
+            <ul>
+              <li>App user: JANGAN gunakan root/sa</li>
+              <li>Grant per-table permissions</li>
+              <li>Restrict dangerous commands (DROP, TRUNCATE)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Auditing & Monitoring</h3>
+        <ul>
+          <li><strong>Enable Database Auditing:</strong>
+            <ul>
+              <li>Track login attempts</li>
+              <li>Log privileged operations</li>
+              <li>Monitor DDL changes (CREATE, ALTER, DROP)</li>
+              <li>Track data access (SELECT, UPDATE, DELETE)</li>
+            </ul>
+          </li>
+          <li><strong>Database Activity Monitoring (DAM):</strong>
+            <ul>
+              <li>Real-time monitoring</li>
+              <li>Anomaly detection</li>
+              <li>Alert pada suspicious activity</li>
+            </ul>
+          </li>
+          <li><strong>Regular Security Audits:</strong>
+            <ul>
+              <li>Review user permissions</li>
+              <li>Check for unused accounts</li>
+              <li>Verify encryption settings</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Backup Security</h3>
+        <ul>
+          <li>Encrypt backup files</li>
+          <li>Store backups securely (offsite, cloud)</li>
+          <li>Test restore procedures regularly</li>
+          <li>Access control untuk backup files</li>
+          <li>Retention policies</li>
+        </ul>
+      `,
+      points: 25,
+    },
+  ],
+  10: [
+    {
+      id: 1,
+      title: 'Introduction to Digital Forensics',
+      duration: '30 menit',
+      content: `
+        <h2>Apa itu Digital Forensics?</h2>
+        <p>Digital forensics adalah proses mengidentifikasi, mengumpulkan, menganalisis, dan menyimpan bukti digital untuk investigasi kejahatan cyber atau insiden keamanan.</p>
+        
+        <h3>Tujuan Digital Forensics</h3>
+        <ul>
+          <li>Mengidentifikasi insiden keamanan</li>
+          <li>Mengumpulkan bukti yang admissible di pengadilan</li>
+          <li>Menentukan root cause</li>
+          <li>Mengidentifikasi pelaku</li>
+          <li>Recovery dari insiden</li>
+          <li>Mencegah insiden serupa di masa depan</li>
+        </ul>
+
+        <h3>Jenis Digital Forensics</h3>
+        <ul>
+          <li><strong>Computer Forensics:</strong> Investigasi komputer dan laptop</li>
+          <li><strong>Mobile Forensics:</strong> Smartphone, tablets</li>
+          <li><strong>Network Forensics:</strong> Network traffic analysis</li>
+          <li><strong>Cloud Forensics:</strong> Cloud services investigation</li>
+          <li><strong>Database Forensics:</strong> Database audit trails</li>
+          <li><strong>Malware Forensics:</strong> Reverse engineering malware</li>
+          <li><strong>Email Forensics:</strong> Email analysis</li>
+        </ul>
+
+        <h3>Digital Forensics Process</h3>
+        <ul>
+          <li><strong>1. Identification:</strong> Mengenali insiden dan evidence</li>
+          <li><strong>2. Preservation:</strong> Secure dan protect evidence (chain of custody)</li>
+          <li><strong>3. Collection:</strong> Mengumpulkan data secara forensically sound</li>
+          <li><strong>4. Examination:</strong> Extract dan assess evidence</li>
+          <li><strong>5. Analysis:</strong> Analyze untuk menemukan facts</li>
+          <li><strong>6. Presentation:</strong> Report findings</li>
+        </ul>
+
+        <h3>Chain of Custody</h3>
+        <p>Dokumentasi yang mencatat siapa yang memiliki akses ke evidence dan kapan.</p>
+        <ul>
+          <li>Who collected the evidence?</li>
+          <li>When dan where was it collected?</li>
+          <li>Who took possession?</li>
+          <li>How was it stored?</li>
+          <li>Who accessed it?</li>
+        </ul>
+
+        <h3>Legal Considerations</h3>
+        <ul>
+          <li>Fourth Amendment (US) - Search & seizure</li>
+          <li>Privacy laws - GDPR, CCPA</li>
+          <li>Authorization - Get legal approval</li>
+          <li>Admissibility - Evidence must be legally obtained</li>
+          <li>Expert witness testimony</li>
+        </ul>
+
+        <h3>Forensics Principles</h3>
+        <ul>
+          <li><strong>Do No Harm:</strong> Jangan modify original evidence</li>
+          <li><strong>Work on Copies:</strong> Forensic images, bukan original</li>
+          <li><strong>Document Everything:</strong> Detailed notes</li>
+          <li><strong>Maintain Chain of Custody:</strong> Unbroken documentation</li>
+          <li><strong>Be Thorough:</strong> Don't miss evidence</li>
+        </ul>
+      `,
+      points: 25,
+    },
+    {
+      id: 2,
+      title: 'Forensic Investigation Techniques',
+      duration: '40 menit',
+      content: `
+        <h2>Data Acquisition</h2>
+        <p>Proses mengumpulkan data dari devices atau media storage.</p>
+        
+        <h3>Jenis Data Acquisition</h3>
+        <ul>
+          <li><strong>Dead Acquisition:</strong> System powered off
+            <ul>
+              <li>Lebih aman, data tidak berubah</li>
+              <li>Kehilangan volatile memory (RAM)</li>
+              <li>Good untuk most cases</li>
+            </ul>
+          </li>
+          <li><strong>Live Acquisition:</strong> System powered on
+            <ul>
+              <li>Capture RAM contents</li>
+              <li>Running processes</li>
+              <li>Network connections</li>
+              <li>Encryption keys in memory</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Disk Imaging</h3>
+        <ul>
+          <li><strong>Bit-by-bit Copy:</strong> Exact replica including deleted files</li>
+          <li><strong>Tools:</strong>
+            <ul>
+              <li>FTK Imager (Free, Windows)</li>
+              <li>dd (Linux): <code>dd if=/dev/sda of=image.dd bs=4M</code></li>
+              <li>EnCase</li>
+              <li>Autopsy</li>
+            </ul>
+          </li>
+          <li><strong>Image Formats:</strong>
+            <ul>
+              <li>Raw (.dd, .raw) - Universal, large size</li>
+              <li>E01 (EnCase) - Compressed, with metadata</li>
+              <li>AFF (Advanced Forensics Format)</li>
+            </ul>
+          </li>
+          <li><strong>Hash Verification:</strong> MD5/SHA256 untuk verify integrity</li>
+        </ul>
+
+        <h3>Memory Forensics</h3>
+        <ul>
+          <li><strong>RAM Analysis:</strong> Capture volatile data
+            <ul>
+              <li>Running processes & services</li>
+              <li>Network connections</li>
+              <li>Decryption keys</li>
+              <li>Recently accessed files</li>
+              <li>Passwords in memory</li>
+            </ul>
+          </li>
+          <li><strong>Tools:</strong>
+            <ul>
+              <li>Volatility Framework - Best untuk memory analysis</li>
+              <li>Rekall</li>
+              <li>Redline</li>
+              <li>DumpIt - Memory acquisition</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>File System Analysis</h3>
+        <ul>
+          <li><strong>Deleted File Recovery:</strong>
+            <ul>
+              <li>File carving techniques</li>
+              <li>Unallocated space analysis</li>
+              <li>Tools: PhotoRec, Scalpel</li>
+            </ul>
+          </li>
+          <li><strong>Timeline Analysis:</strong>
+            <ul>
+              <li>MAC Times (Modified, Accessed, Created)</li>
+              <li>Reconstruct user activity</li>
+              <li>Tools: log2timeline, Plaso</li>
+            </ul>
+          </li>
+          <li><strong>Metadata Examination:</strong>
+            <ul>
+              <li>EXIF data in images</li>
+              <li>Document properties</li>
+              <li>Hidden data in files</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>Artifact Analysis</h2>
+        
+        <h3>Windows Artifacts</h3>
+        <ul>
+          <li><strong>Registry:</strong> User activity, installed software, USB devices</li>
+          <li><strong>Event Logs:</strong> System, Security, Application logs</li>
+          <li><strong>Prefetch:</strong> Program execution history</li>
+          <li><strong>LNK Files:</strong> Recently accessed files</li>
+          <li><strong>Browser History:</strong> Chrome, Firefox, Edge artifacts</li>
+          <li><strong>Recycle Bin:</strong> Deleted files metadata</li>
+        </ul>
+
+        <h3>Linux Artifacts</h3>
+        <ul>
+          <li><strong>/var/log:</strong> System logs</li>
+          <li><strong>bash_history:</strong> Command history</li>
+          <li><strong>/etc/passwd:</strong> User accounts</li>
+          <li><strong>Cron jobs:</strong> Scheduled tasks</li>
+        </ul>
+
+        <h3>Network Forensics</h3>
+        <ul>
+          <li><strong>Packet Capture:</strong> Wireshark, tcpdump</li>
+          <li><strong>Log Analysis:</strong> Firewall, IDS/IPS, proxy logs</li>
+          <li><strong>NetFlow Analysis:</strong> Traffic patterns</li>
+          <li><strong>DNS Logs:</strong> Domain queries</li>
+        </ul>
+      `,
+      points: 35,
+    },
+    {
+      id: 3,
+      title: 'Incident Response & Malware Analysis',
+      duration: '45 menit',
+      content: `
+        <h2>Incident Response Framework</h2>
+        <p>Proses terstruktur untuk menangani security incidents.</p>
+        
+        <h3>NIST Incident Response Lifecycle</h3>
+        <ul>
+          <li><strong>1. Preparation:</strong>
+            <ul>
+              <li>Establish IR team & procedures</li>
+              <li>Deploy monitoring tools</li>
+              <li>Training & awareness</li>
+              <li>Create playbooks</li>
+            </ul>
+          </li>
+          <li><strong>2. Detection & Analysis:</strong>
+            <ul>
+              <li>Monitor alerts (SIEM)</li>
+              <li>Analyze indicators of compromise (IOCs)</li>
+              <li>Determine incident severity</li>
+              <li>Initial triage</li>
+            </ul>
+          </li>
+          <li><strong>3. Containment:</strong>
+            <ul>
+              <li>Short-term: Isolate affected systems</li>
+              <li>Long-term: Apply patches, change credentials</li>
+              <li>Preserve evidence</li>
+            </ul>
+          </li>
+          <li><strong>4. Eradication:</strong>
+            <ul>
+              <li>Remove malware</li>
+              <li>Delete backdoors</li>
+              <li>Fix vulnerabilities</li>
+            </ul>
+          </li>
+          <li><strong>5. Recovery:</strong>
+            <ul>
+              <li>Restore systems from clean backups</li>
+              <li>Monitor untuk reinfection</li>
+              <li>Return to normal operations</li>
+            </ul>
+          </li>
+          <li><strong>6. Lessons Learned:</strong>
+            <ul>
+              <li>Post-incident review</li>
+              <li>Update procedures</li>
+              <li>Improve defenses</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Incident Classification</h3>
+        <ul>
+          <li><strong>Severity Levels:</strong>
+            <ul>
+              <li>Critical: Data breach, ransomware, system compromise</li>
+              <li>High: Malware infection, unauthorized access</li>
+              <li>Medium: Phishing, policy violation</li>
+              <li>Low: Failed login attempts, suspicious email</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>Malware Analysis</h2>
+        
+        <h3>Jenis Malware</h3>
+        <ul>
+          <li><strong>Virus:</strong> Self-replicating, needs host file</li>
+          <li><strong>Worm:</strong> Self-propagating, no host needed</li>
+          <li><strong>Trojan:</strong> Disguised as legitimate software</li>
+          <li><strong>Ransomware:</strong> Encrypts files, demands ransom</li>
+          <li><strong>Spyware:</strong> Steals information</li>
+          <li><strong>Rootkit:</strong> Hides presence, privileged access</li>
+          <li><strong>Botnet:</strong> Network of infected machines</li>
+        </ul>
+
+        <h3>Static Analysis</h3>
+        <ul>
+          <li><strong>Tanpa menjalankan malware:</strong>
+            <ul>
+              <li>File properties & hashes</li>
+              <li>Strings analysis</li>
+              <li>PE/ELF header analysis</li>
+              <li>Disassembly (IDA Pro, Ghidra)</li>
+              <li>Decompilation</li>
+            </ul>
+          </li>
+          <li><strong>Tools:</strong>
+            <ul>
+              <li>PEiD - Detect packers</li>
+              <li>strings - Extract readable text</li>
+              <li>VirusTotal - Multi-AV scanning</li>
+              <li>Ghidra - Free reverse engineering tool</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Dynamic Analysis</h3>
+        <ul>
+          <li><strong>Menjalankan malware di sandbox:</strong>
+            <ul>
+              <li>Behavioral analysis</li>
+              <li>Network traffic monitoring</li>
+              <li>File system changes</li>
+              <li>Registry modifications</li>
+              <li>Process activity</li>
+            </ul>
+          </li>
+          <li><strong>Sandbox Environments:</strong>
+            <ul>
+              <li>Cuckoo Sandbox - Open source</li>
+              <li>ANY.RUN - Interactive online sandbox</li>
+              <li>Joe Sandbox</li>
+              <li>Hybrid Analysis</li>
+            </ul>
+          </li>
+          <li><strong>Tools:</strong>
+            <ul>
+              <li>Process Monitor (Procmon) - Track file/registry changes</li>
+              <li>Process Explorer - Process tree analysis</li>
+              <li>Wireshark - Network traffic</li>
+              <li>Regshot - Registry comparison</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Indicators of Compromise (IOCs)</h3>
+        <ul>
+          <li>File hashes (MD5, SHA256)</li>
+          <li>IP addresses & domains</li>
+          <li>URLs</li>
+          <li>Registry keys</li>
+          <li>Mutex names</li>
+          <li>File paths</li>
+        </ul>
+
+        <h3>Threat Intelligence</h3>
+        <ul>
+          <li><strong>MITRE ATT&CK Framework:</strong> Tactics, techniques, procedures</li>
+          <li><strong>Sharing Platforms:</strong>
+            <ul>
+              <li>AlienVault OTX</li>
+              <li>MISP - Malware Information Sharing Platform</li>
+              <li>Threat Connect</li>
+            </ul>
+          </li>
+          <li><strong>YARA Rules:</strong> Malware detection signatures</li>
+        </ul>
+
+        <h3>Reporting</h3>
+        <ul>
+          <li><strong>Executive Summary:</strong> High-level overview</li>
+          <li><strong>Timeline:</strong> Sequence of events</li>
+          <li><strong>Technical Details:</strong> IOCs, attack vectors</li>
+          <li><strong>Impact Assessment:</strong> Data loss, downtime, cost</li>
+          <li><strong>Root Cause:</strong> How breach occurred</li>
+          <li><strong>Recommendations:</strong> Prevent future incidents</li>
+          <li><strong>Evidence:</strong> Screenshots, logs, artifacts</li>
+        </ul>
+      `,
+      points: 40,
+    },
+  ],
 };
 
 export function LessonContentPage({ moduleId, onNavigate, onComplete }: LessonContentPageProps) {
