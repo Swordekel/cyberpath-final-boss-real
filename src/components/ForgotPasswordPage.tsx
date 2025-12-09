@@ -1,4 +1,4 @@
-import { KeyRound, Mail, Lock, ArrowLeft, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { KeyRound, Mail, Lock, ArrowLeft, CheckCircle, AlertCircle, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { Page } from '../App';
 import { motion, AnimatePresence } from 'motion/react';
@@ -21,6 +21,8 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Step 1: Verify Email
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -314,17 +316,26 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                       className="relative"
                       animate={focusedField === 'newPassword' ? { scale: 1.02 } : { scale: 1 }}
                     >
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      {/* Removed Lock icon */}
                       <input
                         id="newPassword"
-                        type="password"
+                        type={showNewPassword ? 'text' : 'password'}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         onFocus={() => setFocusedField('newPassword')}
                         onBlur={() => setFocusedField(null)}
-                        className="w-full bg-slate-900/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                        className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 pr-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
                         placeholder="••••••••"
                       />
+                      <motion.button
+                        type="button"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-400 transition-colors"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </motion.button>
                     </motion.div>
                   </div>
 
@@ -337,17 +348,26 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                       className="relative"
                       animate={focusedField === 'confirmPassword' ? { scale: 1.02 } : { scale: 1 }}
                     >
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      {/* Removed Lock icon */}
                       <input
                         id="confirmPassword"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         onFocus={() => setFocusedField('confirmPassword')}
                         onBlur={() => setFocusedField(null)}
-                        className="w-full bg-slate-900/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                        className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 pr-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
                         placeholder="••••••••"
                       />
+                      <motion.button
+                        type="button"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-400 transition-colors"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </motion.button>
                     </motion.div>
                   </div>
 
