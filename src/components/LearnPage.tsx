@@ -1,7 +1,8 @@
 import { BookOpen, Lock, Shield, Code, Network, Eye, CheckCircle, Clock, Play, Star, Database, Bug, Smartphone, Cloud, FileSearch } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Page } from '../App';
 import { motion, AnimatePresence } from 'motion/react';
+import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 interface LearnPageProps {
   isLoggedIn: boolean;
@@ -22,9 +23,18 @@ interface Module {
   rating: number;
 }
 
+interface ModuleCompletion {
+  moduleId: number;
+  completedAt: string;
+  lessonsCompleted: number;
+  totalLessons: number;
+}
+
 export function LearnPage({ isLoggedIn, onNavigate, onStartLesson }: LearnPageProps) {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const modules: Module[] = [
     {
@@ -149,6 +159,88 @@ export function LearnPage({ isLoggedIn, onNavigate, onStartLesson }: LearnPagePr
     },
   ];
 
+  useEffect(() => {
+    const fetchCompletedModules = async () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+          console.log('[LearnPage] No user found in localStorage');
+          return;
+        }
+        
+        const user = JSON.parse(userStr);
+        console.log('[LearnPage] Fetching module completions for:', user.email);
+
+        // First, try to load from localStorage immediately for faster UI
+        const localCompletions = localStorage.getItem('completedModules');
+        if (localCompletions) {
+          try {
+            const completedIds = JSON.parse(localCompletions);
+            console.log('[LearnPage] Loaded from localStorage:', completedIds);
+            setCompletedModules(new Set(completedIds));
+          } catch (e) {
+            console.error('[LearnPage] Error parsing localStorage completions:', e);
+          }
+        }
+
+        // Then fetch from server to sync
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-094aa1ac/module/completions/${encodeURIComponent(user.email)}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${publicAnonKey}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('[LearnPage] Server response not OK:', response.status, errorText);
+          return; // Keep localStorage data
+        }
+
+        const data = await response.json();
+        console.log('[LearnPage] Server response data:', data);
+        
+        if (data.completions && Array.isArray(data.completions)) {
+          console.log('[LearnPage] Found completions:', data.completions.length);
+          const completedIds = new Set(data.completions.map((c: any) => c.moduleId));
+          console.log('[LearnPage] Completed module IDs:', Array.from(completedIds));
+          setCompletedModules(completedIds);
+          
+          // Also save to localStorage for offline access
+          localStorage.setItem('completedModules', JSON.stringify(Array.from(completedIds)));
+        } else {
+          console.log('[LearnPage] No completions array in response');
+        }
+      } catch (error) {
+        console.error('[LearnPage] Error fetching module completions:', error);
+        // Keep localStorage data on error
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchCompletedModules();
+      
+      // Also add event listener for storage changes (cross-tab sync)
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'completedModules' && e.newValue) {
+          try {
+            const completedIds = JSON.parse(e.newValue);
+            console.log('[LearnPage] Storage changed, updating:', completedIds);
+            setCompletedModules(new Set(completedIds));
+          } catch (error) {
+            console.error('[LearnPage] Error parsing storage change:', error);
+          }
+        }
+      };
+      
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [isLoggedIn, refreshTrigger]);
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -256,7 +348,7 @@ export function LearnPage({ isLoggedIn, onNavigate, onStartLesson }: LearnPagePr
                   >
                     <module.icon className="w-6 h-6 text-purple-400" />
                   </motion.div>
-                  {module.completed && (
+                  {completedModules.has(module.id) && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -313,13 +405,37 @@ export function LearnPage({ isLoggedIn, onNavigate, onStartLesson }: LearnPagePr
                   </div>
                 </div>
 
+                {completedModules.has(module.id) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 text-green-400 text-sm mb-3 bg-green-400/10 rounded-lg px-3 py-2 border border-green-400/30"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Completed! Available for review</span>
+                  </motion.div>
+                )}
+
                 <motion.button
-                  className="w-full px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all flex items-center justify-center gap-2"
+                  className={`w-full px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 ${
+                    completedModules.has(module.id)
+                      ? 'bg-slate-700/50 text-gray-300 border border-slate-600'
+                      : 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                  }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Play className="w-4 h-4" />
-                  Mulai Belajar
+                  {completedModules.has(module.id) ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Review Module
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Mulai Belajar
+                    </>
+                  )}
                 </motion.button>
               </div>
             </motion.div>
@@ -358,8 +474,29 @@ export function LearnPage({ isLoggedIn, onNavigate, onStartLesson }: LearnPagePr
                     <selectedModule.icon className="w-8 h-8 text-purple-400" />
                   </motion.div>
                   <div className="flex-1">
-                    <h2 className="text-white mb-2">{selectedModule.title}</h2>
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-white">{selectedModule.title}</h2>
+                      {completedModules.has(selectedModule.id) && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 200 }}
+                        >
+                          <CheckCircle className="w-6 h-6 text-green-400" />
+                        </motion.div>
+                      )}
+                    </div>
                     <p className="text-gray-400">{selectedModule.description}</p>
+                    {completedModules.has(selectedModule.id) && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-2 text-green-400 text-sm mt-3 bg-green-400/10 rounded-lg px-3 py-2 border border-green-400/30 inline-flex"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Module Completed!</span>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
 

@@ -43,6 +43,13 @@ interface UserData {
   }>;
 }
 
+interface ModuleCompletion {
+  moduleId: number;
+  completedAt: string;
+  lessonsCompleted: number;
+  totalLessons: number;
+}
+
 // ==================== HELPER FUNCTIONS ====================
 function generateUserKey(email: string): string {
   return `user:${email}`;
@@ -50,6 +57,14 @@ function generateUserKey(email: string): string {
 
 function generateResetCodeKey(email: string): string {
   return `reset:${email}`;
+}
+
+function generateModuleCompletionKey(email: string, moduleId: number): string {
+  return `module_completion:${email}:${moduleId}`;
+}
+
+function generateModuleCompletionPrefix(email: string): string {
+  return `module_completion:${email}:`;
 }
 
 // ==================== HEALTH CHECK ====================
@@ -417,6 +432,79 @@ app.post("/make-server-094aa1ac/reset-password", async (c) => {
   } catch (error) {
     console.error('Reset password error:', error);
     return c.json({ error: 'Internal server error during password reset' }, 500);
+  }
+});
+
+// ==================== COMPLETE MODULE ====================
+app.post("/make-server-094aa1ac/module/complete", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { email, moduleId, lessonsCompleted, totalLessons } = body;
+
+    console.log('Module completion request:', { email, moduleId, lessonsCompleted, totalLessons });
+
+    if (!email || moduleId === undefined || lessonsCompleted === undefined || totalLessons === undefined) {
+      return c.json({ error: "Missing required fields" }, 400);
+    }
+
+    // Create module completion record
+    const moduleCompletion: ModuleCompletion = {
+      moduleId,
+      completedAt: new Date().toISOString(),
+      lessonsCompleted,
+      totalLessons,
+    };
+
+    // Save to database
+    const completionKey = generateModuleCompletionKey(email, moduleId);
+    
+    try {
+      await kv.set(completionKey, moduleCompletion);
+      console.log('Module completion saved:', completionKey, moduleCompletion);
+    } catch (kvError) {
+      console.error('KV Store error during module completion save:', kvError);
+      return c.json({ error: "Database connection error. Please try again." }, 503);
+    }
+
+    return c.json({ 
+      success: true, 
+      moduleCompletion 
+    });
+
+  } catch (error) {
+    console.error('Module completion error:', error);
+    return c.json({ error: 'Internal server error while saving module completion' }, 500);
+  }
+});
+
+// ==================== GET MODULE COMPLETIONS ====================
+app.get("/make-server-094aa1ac/module/completions/:email", async (c) => {
+  try {
+    const email = c.req.param('email');
+    
+    if (!email) {
+      return c.json({ error: "Email is required" }, 400);
+    }
+
+    console.log('Fetching module completions for:', email);
+
+    // Get all module completions for this user
+    const completionPrefix = generateModuleCompletionPrefix(email);
+    let completions;
+    
+    try {
+      completions = await kv.getByPrefix(completionPrefix);
+      console.log('Module completions found:', completions.length);
+    } catch (kvError) {
+      console.error('KV Store error during module completions fetch:', kvError);
+      return c.json({ error: "Database connection error. Please try again." }, 503);
+    }
+
+    return c.json({ completions });
+
+  } catch (error) {
+    console.error('Get module completions error:', error);
+    return c.json({ error: 'Internal server error while fetching module completions' }, 500);
   }
 });
 

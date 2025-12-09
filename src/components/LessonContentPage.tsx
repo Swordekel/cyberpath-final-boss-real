@@ -2,6 +2,7 @@ import { BookOpen, CheckCircle, ArrowLeft, ArrowRight, Play, Clock, Award } from
 import { useState } from 'react';
 import { Page } from '../App';
 import { motion } from 'motion/react';
+import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 interface LessonContentPageProps {
   moduleId: number;
@@ -3421,12 +3422,69 @@ export function LessonContentPage({ moduleId, onNavigate, onComplete }: LessonCo
   const isLastLesson = currentLessonIndex === lessons.length - 1;
   const isFirstLesson = currentLessonIndex === 0;
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!completedLessons.includes(currentLesson.id)) {
       setCompletedLessons([...completedLessons, currentLesson.id]);
     }
 
     if (isLastLesson) {
+      // Save module completion to database
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          console.log('[LessonContentPage] Completing module:', moduleId);
+
+          const response = await fetch(
+            `https://${projectId}.supabase.co/functions/v1/make-server-094aa1ac/module/complete`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${publicAnonKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: user.email,
+                moduleId: moduleId,
+                lessonsCompleted: lessons.length,
+                totalLessons: lessons.length,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            console.warn('[LessonContentPage] Failed to save to server, using localStorage fallback');
+            // Fallback to localStorage
+            const localCompletions = localStorage.getItem('completedModules');
+            const completedIds = localCompletions ? JSON.parse(localCompletions) : [];
+            if (!completedIds.includes(moduleId)) {
+              completedIds.push(moduleId);
+              localStorage.setItem('completedModules', JSON.stringify(completedIds));
+            }
+          } else {
+            const data = await response.json();
+            console.log('[LessonContentPage] Module completion saved:', data);
+            
+            // Also update localStorage
+            const localCompletions = localStorage.getItem('completedModules');
+            const completedIds = localCompletions ? JSON.parse(localCompletions) : [];
+            if (!completedIds.includes(moduleId)) {
+              completedIds.push(moduleId);
+              localStorage.setItem('completedModules', JSON.stringify(completedIds));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[LessonContentPage] Error saving module completion:', error);
+        // Fallback to localStorage on error
+        const localCompletions = localStorage.getItem('completedModules');
+        const completedIds = localCompletions ? JSON.parse(localCompletions) : [];
+        if (!completedIds.includes(moduleId)) {
+          completedIds.push(moduleId);
+          localStorage.setItem('completedModules', JSON.stringify(completedIds));
+        }
+      }
+
       if (onComplete) onComplete();
       onNavigate('learn');
     } else {

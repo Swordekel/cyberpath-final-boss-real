@@ -65,6 +65,7 @@ function App() {
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [lessonProgress, setLessonProgress] = useState<LessonProgress[]>([]);
   const [completedQuizzes, setCompletedQuizzes] = useState<CompletedQuiz[]>([]);
+  const [learnPageKey, setLearnPageKey] = useState(0); // Add key to force re-render
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: '',
     email: '',
@@ -306,7 +307,7 @@ function App() {
             exit="exit"
             transition={pageTransition}
           >
-            <LearnPage isLoggedIn={isLoggedIn} onNavigate={setCurrentPage} onStartLesson={handleStartLesson} />
+            <LearnPage key={learnPageKey} isLoggedIn={isLoggedIn} onNavigate={setCurrentPage} onStartLesson={handleStartLesson} />
           </motion.div>
         );
       case 'quiz':
@@ -436,7 +437,14 @@ function App() {
           >
             <LessonContentPage 
               moduleId={selectedModuleId || 1}
-              onNavigate={setCurrentPage}
+              onNavigate={(page) => {
+                // Force refresh LearnPage when returning from lesson
+                if (page === 'learn') {
+                  setLearnPageKey(prev => prev + 1);
+                  console.log('[App] 🔄 Refreshing LearnPage after lesson completion');
+                }
+                setCurrentPage(page);
+              }}
             />
           </motion.div>
         );
